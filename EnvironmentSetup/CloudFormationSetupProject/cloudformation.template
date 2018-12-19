@@ -15,12 +15,12 @@
         "BetaInstanceType" : {
             "Type" : "String",
             "Description" : "The EC2 instance type to use when creating the application servers",
-            "Default"     : "t2.small"
+            "Default"     : "t3.small"
         },
         "ProdInstanceType" : {
             "Type" : "String",
             "Description" : "The EC2 instance type to use when creating the application servers",
-            "Default"     : "t2.medium"
+            "Default"     : "t3.medium"
         },
         "EC2KeyName"   : {
             "Type" : "AWS::EC2::KeyPair::KeyName",
@@ -274,7 +274,7 @@
                                         "",
                                         [
                                             "powershell.exe -Command \"Read-S3Object ",
-                                            "-BucketName aws-codedeploy-us-east-1 ",
+                                            "-BucketName aws-codedeploy-", { "Ref": "AWS::Region" }, " ",
                                             "-Key latest/codedeploy-agent.msi ",
                                             "-File codedeploy-agent.msi\""
                                         ]
@@ -515,8 +515,7 @@
                             "Effect" : "Allow",
                             "Principal" : {
                                 "Service" : [
-                                    "codedeploy.us-east-1.amazonaws.com",
-                                    "codedeploy.us-west-2.amazonaws.com"
+                                    { "Fn::Sub": "codedeploy.${AWS::Region}.amazonaws.com" }
                                 ]
                             },
                             "Action"    : "sts:AssumeRole"
@@ -803,7 +802,10 @@
         "InstanceRole"           : {
             "Type" : "AWS::IAM::Role",
             "Properties" : {
-                "AssumeRolePolicyDocument" : {
+				"ManagedPolicyArns": [
+					"arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+				],
+				"AssumeRolePolicyDocument" : {
                     "Statement" : [
                         {
                             "Effect" : "Allow",
